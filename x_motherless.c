@@ -155,6 +155,7 @@ int main(int argc, char **argv)
 		return -1;
 	}
 	
+	cflags_set(CFLAGS_KEEP_PAGE);
 	if (url_is_remote(argsave)) {
 		motherless_process_url(argsave);
 	} else {

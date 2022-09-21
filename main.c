@@ -9,7 +9,7 @@ do
   sleep 1
 done
 
- */
+*/
 
 #include <ctype.h>
 #include <stdio.h>
@@ -21,7 +21,7 @@ done
 #include "urltool.h"
 
 #define VERSION		"3.0"
-
+#define DEF_FLAGS	(CFLAGS_DUMP | CFLAGS_MEDIA | CFLAGS_CONTINUOUS | CFLAGS_SORT)
 
 int e_hentai_test(int argc, char **argv);
 void e_hentai_statement(int opt);
@@ -85,6 +85,7 @@ static int e_hentai_cleanup(char *fname);
 char	*help = "\
 Usage: e-hentai-dl [-d][-s][-p] [html_page|URL]\n\
   -s,--single        download one image only\n\
+  -k,--keep-webpage  save the webpage for further study\n\
   -d[a|i]            dump URL of [all|image] in the page\n\
   -p,--proxy URL     specify a proxy server\n\
      --help          help and more helps by '-'\n\
@@ -97,6 +98,7 @@ Usage: e-hentai-dl [-c] directory [...]\n\
 
 int main(int argc, char **argv)
 {
+	cflags_set(DEF_FLAGS);
 	while (--argc && (**++argv == '-')) {
 		if (!strcmp(*argv, "--help")) {
 			puts(help);
@@ -107,9 +109,11 @@ int main(int argc, char **argv)
 		} else if (!strncmp(*argv, "--help-", 7)) {
 			return dispatch_by_unit_test(argc, argv);
 		} else if (!strcmp(*argv, "-s") || !strcmp(*argv,"--single")) {
-			cflags_init('s');
+			cflags_argvs('s');
+		} else if (!strcmp(*argv, "-k") || !strcmp(*argv,"--keep-webpage")) {
+			cflags_argvs('k');
 		} else if (!strncmp(*argv, "-d", 2)) {
-			cflags_init(argv[0][2]);
+			cflags_argvs(argv[0][2]);
 		} else if (!strcmp(*argv, "-p") || !strcmp(*argv, "--proxy")) {
 			if (--argc < 1) {
 				printf("Missing options!\n");

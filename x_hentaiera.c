@@ -10,7 +10,7 @@
 #include "urltool.h"
 
 #define URL_MAX		32
-static	char	_session_dir[128];
+static	char	_session_dir[256];
 static  int     _img_loaded = 0;
 static  int     _img_skipped = 0;
 
@@ -48,7 +48,7 @@ int hentaiera_process_page(char *webpage, char *fpage)
 	char	*p;
 	int	rc;
 
-        cflags_set(CFLAGS_KEEP_PAGE);	/* always save the webpage */
+        //cflags_set(CFLAGS_KEEP_PAGE);	/* always save the webpage */
 	if ((p = strstr(webpage, "<title")) == NULL) {
 		return ERR_PARSE;
 	}
@@ -82,7 +82,7 @@ int hentaiera_process_page(char *webpage, char *fpage)
 int hentaiera_process_url(char *url)
 {
 	strcpy(_session_dir, ".");	/* It will be overwritten in hentaiera_front_url() */
-        cflags_set(CFLAGS_KEEP_PAGE);	/* always save the webpage */
+        //cflags_set(CFLAGS_KEEP_PAGE);	/* always save the webpage */
 	if (strstr(url, "gallery")) {
 		/* URL to the front page, such as:
 		 * https://hentaiera.com/gallery/912729/  */

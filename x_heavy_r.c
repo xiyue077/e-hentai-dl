@@ -13,7 +13,6 @@
  * <meta property="og:url" content="https://www.heavy-r.com/video/416067/Gaming_Characters/" />
  * <source type="video/mp4" src="https://cdn-b.heavy-r.com/vid/48/e7/71/48e7719cc546d9a.mp4">
  */
-
 static int heavy_r_video_page(char *webpage, char *fpage)
 {
 	char	*next, *urlidx[URL_MAX];

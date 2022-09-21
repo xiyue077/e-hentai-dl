@@ -10,7 +10,7 @@
 #include "urltool.h"
 
 #define URL_MAX		32
-static	char	_session_dir[128];
+static	char	_session_dir[256];
 static  int     _img_loaded = 0;
 static  int     _img_skipped = 0;
 
@@ -49,7 +49,7 @@ int comicporn_process_page(char *webpage, char *fpage)
 {
 	int	rc;
 
-        cflags_set(CFLAGS_KEEP_PAGE);	/* always save the webpage */
+        //cflags_set(CFLAGS_KEEP_PAGE);	/* always save the webpage */
 	if (strstr(webpage, "gallery_view")) {
 		rc = comicporn_session_page(webpage, fpage);
 		switch (rc) {
@@ -80,7 +80,7 @@ int comicporn_process_page(char *webpage, char *fpage)
 int comicporn_process_url(char *url)
 {
 	strcpy(_session_dir, ".");	/* It will be overwritten in comicporn_front_url() */
-        cflags_set(CFLAGS_KEEP_PAGE);	/* always save the webpage */
+        //cflags_set(CFLAGS_KEEP_PAGE);	/* always save the webpage */
 	if (strstr(url, "gallery")) {
 		comicporn_front_url(url);
         } else {

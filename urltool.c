@@ -19,7 +19,7 @@
 
 static	FILE	*_slog_fp = NULL;
 static	char	*_wget_proxy = NULL;
-static  int	_session_flags = CFLAGS_DUMP | CFLAGS_MEDIA | CFLAGS_CONTINUOUS | CFLAGS_SORT;
+static  int	_session_flags = 0;
 
 /* 
  * IE6 on Windows XP: 
@@ -781,11 +781,14 @@ int cflags_check(int flag)
 	return ((_session_flags & flag) == flag);
 }
 
-int cflags_init(int c)
+int cflags_argvs(int c)
 {
 	switch (c) {
 	case 's':
 		cflags_clear(CFLAGS_CONTINUOUS);
+		break;
+	case 'k':
+		cflags_set(CFLAGS_KEEP_PAGE);
 		break;
 	case 'a':
 		cflags_set(CFLAGS_DUMP | CFLAGS_DUMP_ALL);

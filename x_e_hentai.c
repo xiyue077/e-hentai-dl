@@ -877,7 +877,7 @@ static char *e_hentai_image_name(char *imgurl, char *pname, int last)
 
 	strcat(buffer, e_hentai_url_filename(imgurl, NULL, 0));
 
-#if 1
+#if 1	/* 20220914 just delete the previous downloaded/broken image */
 	if ((fp = fopen(buffer, "r")) != NULL) {
 		fclose(fp);
 		unlink(buffer);

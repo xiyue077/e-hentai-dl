@@ -69,7 +69,7 @@ void sys_download_proxy_open(char *proxy);
 void sys_download_proxy_close(void);
 int sys_delay(void);
 
-int cflags_init(int c);
+int cflags_argvs(int c);
 int cflags_set(int flag);
 int cflags_clear(int flag);
 int cflags_check(int flag);
