@@ -2,7 +2,7 @@
 download images from e-hentai.org.
 
 # INSTALLATION
-***e-hentai-dl*** is very simple and small. It is written in C without any external library or frameworks. 
+**e-hentai-dl** is very simple and small. It is written in C without any external library or frameworks. 
 You just need to download the zip package, or clone from github:
 
     git clone https://github.com/xiyue077/e-hentai-dl.git
@@ -36,6 +36,7 @@ When you modify/integrate/redistribute it, please keep this convention for other
 # OPTIONS
 
     -s, --single                         Download only one image and stop
+    -u, --unsort                         Do not prefix the sorting number to images
     -p, --proxy URL                      Specify a proxy server
     -h, --help                           Print this help text and exit
     --version                            Print program version and exit
@@ -114,8 +115,9 @@ in the current directory. Inspect it with a text editor, for example:
 [20220921092914] Images Downloaded: 941
 [20220921092914] Images Missed:     2
 ```
-which means in archive 565077e1ff it failed to downloaded 72997235_p0.jpg from 2178873-55; 
-in archive 4f4fac615c it failed to downloaded 90866278_p0.jpg from 2062785-9. So you may run this command:
+which means in archive 565077e1ff it failed to downloaded 72997235_p0.jpg from page 2178873-55; 
+in archive 4f4fac615c it failed to downloaded 90866278_p0.jpg from page 2062785-9. 
+So you may run this command:
 ```
 $ cd 565077e1ff
 $ e-hentai-dl -s 2178873-55
@@ -125,11 +127,11 @@ and
 $ cd 4f4fac615c
 $ e-hentai-dl -s 2062785-9
 ```
-to recollect them. It normally works well. If it still stuck, come back tomorrow.
+to recollect them. It normally works well. If it still stuck, please try again in another day.
 
 ### Rename the archive and clean the mess
 As mentioned above, sometimes some images may go missing. 
-To manually recover these images, **e-hentai-dl** has to keep the intermediate web pages like this:
+For manually recovering these images, **e-hentai-dl** has to keep the intermediate web pages like this:
 ```
 $ e-hentai-dl https://e-hentai.org/g/2327820/ac144bcd8c/
 $ ls ac144bcd8c
@@ -154,7 +156,7 @@ ac144bcd8c.txt
 ```
 These 2327820-1 to 2327820-8 were the intermediate files. 
 If nothing missing, they ought to be deleted; alas, the archive name ac144bcd8c is not dude friendly.
-I normally will change it to a more meanfully name, like the title in web page. 
+I normally change it to a more meanfully name, like the title in web page. 
 **e-hentai-dl** can do this in one line by the '-c' option:
 ```
 $ e-hentai-dl -c ac144bcd8c
@@ -173,4 +175,34 @@ ac144bcd8c.txt
 ```
 
 ### Unsort the images
+By default setting, **e-hentai-dl** will add a number prefix to every downloaded images,
+so that would make the image order align with that in the web page. 
+For example, in the above archive ac144bcd8c, the original names of these images
+```
+1_20220913_220147_img1_Merryweatherey_1569793488405032960.jpg
+2_20220913_220147_img2_Merryweatherey_1569793488405032960.jpg
+3_20220913_220147_img3_Merryweatherey_1569793488405032960.jpg
+```
+actually were
+```
+20220913_220147_img1_Merryweatherey_1569793488405032960.jpg
+20220913_220147_img2_Merryweatherey_1569793488405032960.jpg
+20220913_220147_img3_Merryweatherey_1569793488405032960.jpg
+```
+This setting can also avoid overwriting the images with the same name, which sometimes happens in e-hentai.org.
+This setting can be disabled by '-u' option.
+```
+$ e-hentai-dl -u https://e-hentai.org/g/2327820/ac144bcd8c/
+$ ls ac144bcd8c/
+20220913_220147_img1_Merryweatherey_1569793488405032960.jpg  2327820-2
+20220913_220147_img2_Merryweatherey_1569793488405032960.jpg  2327820-3
+20220913_220147_img3_Merryweatherey_1569793488405032960.jpg  2327820-4
+20220913_220147_img4_Merryweatherey_1569793488405032960.jpg  2327820-5
+20220915_174625_img1_Merryweatherey_1570453999177834500.jpg  2327820-6
+20220915_174625_img2_Merryweatherey_1570453999177834500.jpg  2327820-7
+20220915_174625_img3_Merryweatherey_1570453999177834500.jpg  2327820-8
+20220915_174625_img4_Merryweatherey_1570453999177834500.jpg  ac144bcd8c
+2327820-1                                                    ac144bcd8c.txt
+```
+You will receive the images with the original names. If the images have the same name, only the last one remains.
 

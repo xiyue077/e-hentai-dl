@@ -799,6 +799,9 @@ int cflags_argvs(int c)
 		cflags_clear(CFLAGS_DUMP);
 		cflags_clear(CFLAGS_MEDIA);
 		break;
+	case 'u':
+		cflags_clear(CFLAGS_SORT);
+		break;
 	case 0:
 		cflags_set(CFLAGS_DUMP);
 		cflags_clear(CFLAGS_MEDIA);

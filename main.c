@@ -20,7 +20,7 @@ done
 
 #include "urltool.h"
 
-#define VERSION		"3.0"
+#define VERSION		"3.1"
 #define DEF_FLAGS	(CFLAGS_DUMP | CFLAGS_MEDIA | CFLAGS_CONTINUOUS | CFLAGS_SORT)
 
 int e_hentai_test(int argc, char **argv);
@@ -86,6 +86,7 @@ char	*help = "\
 Usage: e-hentai-dl [-d][-s][-p] [html_page|URL]\n\
   -s,--single        download one image only\n\
   -k,--keep-webpage  save the webpage for further study\n\
+  -u,--unsort        do not prefix the sorting number to images\n\
   -d[a|i]            dump URL of [all|image] in the page\n\
   -p,--proxy URL     specify a proxy server\n\
      --help          help and more helps by '-'\n\
@@ -114,6 +115,8 @@ int main(int argc, char **argv)
 			cflags_argvs('k');
 		} else if (!strncmp(*argv, "-d", 2)) {
 			cflags_argvs(argv[0][2]);
+		} else if (!strcmp(*argv, "-u") || !strcmp(*argv,"--unsort")) {
+			cflags_argvs('u');
 		} else if (!strcmp(*argv, "-p") || !strcmp(*argv, "--proxy")) {
 			if (--argc < 1) {
 				printf("Missing options!\n");
