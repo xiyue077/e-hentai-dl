@@ -473,7 +473,7 @@ static int e_hentai_session_url(char *url)
 		}
 		break;
 	case ERR_DL_IMAGE:
-		slog("%s : missed the last image %s\n", _session_dir, curl);
+		//slog("%s : missed the last image %s\n", _session_dir, curl);
 		skip++;
 		break;
 	}
