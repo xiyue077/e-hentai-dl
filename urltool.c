@@ -634,10 +634,13 @@ int sys_download_ytdl(char *url)
 
 /* proxy: username:passwd@10.20.30.40:1234 or
  * http://hniksic:mypassword@proxy.company.com:8001/ */
+/* 20230104 Fixed the "ERROR: The certificate of `www.dropbox.com' is not trusted." issue 
+ * https://stackoverflow.com/questions/9224298/how-do-i-fix-certificate-errors-when-running-
+ *      wget-on-an-https-url-in-cygwin */
 int sys_download_wget(char *url, char *fname)
 {
 	char	*wget_tbl[] = { "-O" };
-	char	*argv[64] = { "wget", "-U", BROWSER, "-t", "1", "-T", "60", NULL };
+	char	*argv[64] = { "wget", "-U", BROWSER, "-t", "1", "-T", "60", "--no-check-certificate", NULL };
 	int	i, rcode;
 
 	for (i = 0; argv[i]; i++);	// i = 5;
