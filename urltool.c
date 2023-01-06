@@ -637,6 +637,8 @@ int sys_download_ytdl(char *url)
  * https://stackoverflow.com/questions/50641251/linux-m3u8-how-to-manually-download-
  *    and-create-an-mp4-from-segments-listed-in
  * https://stackoverflow.com/questions/49975527/choose-download-resolution-in-m3u8-list-with-ffmpeg
+ * https://gist.github.com/tzmartin/fb1f4a8e95ef5fb79596bd4719671b5d
+ * youtube_dl -g URL to get the m3u8 url
  * */
 int sys_download_m3u8(char *url, char *fname)
 {

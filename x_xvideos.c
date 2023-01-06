@@ -8,7 +8,9 @@
 
 #define URL_MAX		32
 
+static int xvideos_sort_m3u8(char *url);
 
+/*
 static int print60(int ref, char *s)
 {
 	char	tmp[256];
@@ -17,6 +19,7 @@ static int print60(int ref, char *s)
 	printf("%d: %s\n", ref, tmp);
 	return 0;
 }
+*/
 
 /* https://www.xvideos.com/video33916411/freezing_vibration_ova
  * <title>Freezing Vibration OVA - XVIDEOS.COM</title>
@@ -76,7 +79,7 @@ static int xvideos_video_page(char *webpage, char *fpage)
 			urlidx[i--] = NULL;
 			continue;
                 }
-		print60(i, urlidx[i]);
+		//print60(i, urlidx[i]);
 	}
 
 	/* Find contentUrl:
@@ -90,7 +93,7 @@ static int xvideos_video_page(char *webpage, char *fpage)
 		}
 		next = urlidx[i] + 13;
 		urlidx[i] = strchr(next, '\"') + 1;
-		print60(i+10, urlidx[i]);
+		//print60(i+10, urlidx[i]);
 	}
 
 	/* searching video resources 
@@ -108,7 +111,7 @@ static int xvideos_video_page(char *webpage, char *fpage)
 			urlidx[i--] = NULL;
 			continue;
 		}
-		print60(i+20, urlidx[i]);
+		//print60(i+20, urlidx[i]);
 	}
 
 	if (cflags_check(CFLAGS_DUMP)) {
@@ -158,6 +161,8 @@ foundit:
 	printf("Downloading %s ...\n", vidlink);
 	if (cflags_check(CFLAGS_MEDIA)) {
 		if (!strncmp(urlidx[i], "HLS(", 4)) {
+			xvideos_sort_m3u8(vidlink);
+			printf("Refined %s ...\n", vidlink);
 			rc = sys_download_m3u8(vidlink, title);
 		} else {
 			rc = sys_download_wget_image(vidlink, title);
@@ -193,6 +198,39 @@ int xvideos_process_url(char *url)
 	if (!cflags_check(CFLAGS_KEEP_PAGE)) {
 		unlink(fname);
 	}
+	return 0;
+}
+
+static int xvideos_sort_m3u8(char *url)
+{
+	FILE	*fp;
+	char	*fname, buf[1024], best[256];
+	int	rc, res = 0;
+
+	fname = url_get_tail(url, '/');
+	if (sys_download_wget(url, fname) != 0) {
+		return -1;
+	}
+	
+	if ((fp = fopen(fname, "r")) == NULL) {
+		return -1;
+	}
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
+		if (buf[0] == '#') {
+			continue;
+		}
+		url_trim_tail_ctlsp(buf, NULL);
+
+		/* hls-360p-27087.m3u8 */
+		rc = (int)strtol(buf + 4, NULL, 0);
+		if (rc > res) {
+			res = rc;
+			strx_strncpy(best, buf, sizeof(best));
+		}
+	}
+	fclose(fp);
+
+	strcpy(fname, best);
 	return 0;
 }
 
