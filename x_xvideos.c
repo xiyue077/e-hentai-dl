@@ -8,16 +8,32 @@
 
 #define URL_MAX		32
 
+
+static int print60(int ref, char *s)
+{
+	char	tmp[256];
+
+	strx_strncpy(tmp, s, 60);
+	printf("%d: %s\n", ref, tmp);
+	return 0;
+}
+
 /* https://www.xvideos.com/video33916411/freezing_vibration_ova
  * <title>Freezing Vibration OVA - XVIDEOS.COM</title>
  * "video_title":"Freezing Vibration OVA"
  * html5player.setVideoTitle('Freezing Vibration OVA');
-"contentUrl": "https://video-hw.xvideos-cdn.com/videos/mp4/3/f/6/xvideos.com_3f6273a9505db8598b7751ad53b3e206.mp4?e=1662387291&ri=1024&rs=85&h=61af43d6459cc28bc5842c03eea9860a",
-<a href="https://video-hw.xvideos-cdn.com/videos/mp4/3/f/6/xvideos.com_3f6273a9505db8598b7751ad53b3e206.mp4?e=1662387291&ri=1024&rs=85&h=61af43d6459cc28bc5842c03eea9860a">
-<a href="https://video-hw.xvideos-cdn.com/videos/3gp/3/f/6/xvideos.com_3f6273a9505db8598b7751ad53b3e206.mp4?e=1662387291&ri=1024&rs=85&h=b54d1b53c573ca65aa100722b69bf3ce">
-<a href="https://video-hw.xvideos-cdn.com/videos/mp4/3/f/6/xvideos.com_3f6273a9505db8598b7751ad53b3e206.mp4?e=1662387291&ri=1024&rs=85&h=61af43d6459cc28bc5842c03eea9860a">
-html5player.setVideoUrlLow('https://video-hw.xvideos-cdn.com/videos/3gp/3/f/6/xvideos.com_3f6273a9505db8598b7751ad53b3e206.mp4?e=1662387291&ri=1024&rs=85&h=b54d1b53c573ca65aa100722b69bf3ce');
-html5player.setVideoUrlHigh('https://video-hw.xvideos-cdn.com/videos/mp4/3/f/6/xvideos.com_3f6273a9505db8598b7751ad53b3e206.mp4?e=1662387291&ri=1024&rs=85&h=61af43d6459cc28bc5842c03eea9860a');
+"contentUrl": "https://video-hw.xvideos-cdn.com/videos/mp4/3/f/6/xvideos.com_
+  3f6273a9505db8598b7751ad53b3e206.mp4?e=1662387291&ri=1024&rs=85&h=61af43d6459cc28bc5842c03eea9860a",
+<a href="https://video-hw.xvideos-cdn.com/videos/mp4/3/f/6/xvideos.com_
+  3f6273a9505db8598b7751ad53b3e206.mp4?e=1662387291&ri=1024&rs=85&h=61af43d6459cc28bc5842c03eea9860a">
+<a href="https://video-hw.xvideos-cdn.com/videos/3gp/3/f/6/xvideos.com_
+  3f6273a9505db8598b7751ad53b3e206.mp4?e=1662387291&ri=1024&rs=85&h=b54d1b53c573ca65aa100722b69bf3ce">
+<a href="https://video-hw.xvideos-cdn.com/videos/mp4/3/f/6/xvideos.com_
+  3f6273a9505db8598b7751ad53b3e206.mp4?e=1662387291&ri=1024&rs=85&h=61af43d6459cc28bc5842c03eea9860a">
+html5player.setVideoUrlLow('https://video-hw.xvideos-cdn.com/videos/3gp/3/f/6/xvideos.com_
+  3f6273a9505db8598b7751ad53b3e206.mp4?e=1662387291&ri=1024&rs=85&h=b54d1b53c573ca65aa100722b69bf3ce');
+html5player.setVideoUrlHigh('https://video-hw.xvideos-cdn.com/videos/mp4/3/f/6/xvideos.com_
+  3f6273a9505db8598b7751ad53b3e206.mp4?e=1662387291&ri=1024&rs=85&h=61af43d6459cc28bc5842c03eea9860a');
  */
 static int xvideos_video_page(char *webpage, char *fpage)
 {
@@ -45,15 +61,22 @@ static int xvideos_video_page(char *webpage, char *fpage)
 	 * searching player control
 	 * html5player.setVideoUrlLow('https://video-hw.xvideos ...
 	 * html5player.setVideoUrlHigh('https://video-hw.xvideos-c ...
+	 * html5player.setVideoHLS('http://cdn77-vid.xvideos-cdn.com ...
 	 * Pointing to:
-	 * Low('https://video-hw.xvideos
+	 * UrlLow('https://video-hw.xvideos
 	 */
 	for (i = 0, next = webpage; i < URL_MAX; i++) {
-		if ((urlidx[i] = strstr(next, "html5player.setVideoUrl")) == NULL) {
+		if ((urlidx[i] = strstr(next, "html5player.setVideo")) == NULL) {
 			break;
 		}
-		urlidx[i] += strlen("html5player.setVideoUrl");
+		urlidx[i] += strlen("html5player.setVideo");
 		next = strchr(urlidx[i], ')') + 1;
+
+		if (strncmp(urlidx[i], "Url", 3) && strncmp(urlidx[i], "HLS", 3)) {
+			urlidx[i--] = NULL;
+			continue;
+                }
+		print60(i, urlidx[i]);
 	}
 
 	/* Find contentUrl:
@@ -67,6 +90,7 @@ static int xvideos_video_page(char *webpage, char *fpage)
 		}
 		next = urlidx[i] + 13;
 		urlidx[i] = strchr(next, '\"') + 1;
+		print60(i+10, urlidx[i]);
 	}
 
 	/* searching video resources 
@@ -82,7 +106,9 @@ static int xvideos_video_page(char *webpage, char *fpage)
 		next = strchr(urlidx[i], '>');
 		if (strstr(vidlink, ".mp4") == NULL) {
 			urlidx[i--] = NULL;
+			continue;
 		}
+		print60(i+20, urlidx[i]);
 	}
 
 	if (cflags_check(CFLAGS_DUMP)) {
@@ -96,18 +122,24 @@ static int xvideos_video_page(char *webpage, char *fpage)
 		}
 	}
 
-	/* pick high resolution first; otherwise choose the last one */
-	for (i = 0; urlidx[i]; i++) {
-		if (!strncmp(urlidx[i], "High('", 6)) {
-			break;
-		}
-	}
-
-	if (i == 0) {
+	if (urlidx[0] == NULL) {
 		slog("%s: video link not found.\n", fpage);
 		return ERR_URL_NONE;
 	}
 
+	/* pick high resolution first; otherwise choose the last one */
+	for (i = 0; urlidx[i]; i++) {
+		if (!strncmp(urlidx[i], "HLS(", 4)) {
+			goto foundit;
+		}
+	}
+	for (i = 0; urlidx[i]; i++) {
+		if (!strncmp(urlidx[i], "UrlHigh(", 8)) {
+			goto foundit;
+		}
+	}
+
+foundit:
 	if (urlidx[i] == NULL) {		/* no high resolution profile */
 		i--;
 		htm_common_pick(urlidx[i], NULL, "\"", vidlink, sizeof(vidlink));
@@ -125,7 +157,11 @@ static int xvideos_video_page(char *webpage, char *fpage)
 
 	printf("Downloading %s ...\n", vidlink);
 	if (cflags_check(CFLAGS_MEDIA)) {
-		rc = sys_download_wget_image(vidlink, title);
+		if (!strncmp(urlidx[i], "HLS(", 4)) {
+			rc = sys_download_m3u8(vidlink, title);
+		} else {
+			rc = sys_download_wget_image(vidlink, title);
+		}
 		if (rc == 0) {
 			slog("%s: saved '%s'\n", fpage, title);
 		} else {

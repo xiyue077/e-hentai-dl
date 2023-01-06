@@ -62,6 +62,7 @@ char *htm_common_pick(char *s, char *from, char *to, char *buf, int blen);
 int htm_break(char *fname);
 
 int sys_download_ytdl(char *url);
+int sys_download_m3u8(char *url, char *fname);
 int sys_download_wget(char *url, char *fname);
 int sys_download_wget_image(char *url, char *fname);
 int sys_download_wget_page(char *url, char *fname);
