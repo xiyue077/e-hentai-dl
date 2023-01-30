@@ -20,7 +20,7 @@ done
 
 #include "urltool.h"
 
-#define VERSION		"3.1"
+#define VERSION		"3.2"
 #define DEF_FLAGS	(CFLAGS_DUMP | CFLAGS_MEDIA | CFLAGS_CONTINUOUS | CFLAGS_SORT)
 
 int e_hentai_test(int argc, char **argv);
