@@ -19,6 +19,7 @@
 
 static	FILE	*_slog_fp = NULL;
 static	char	*_wget_proxy = NULL;
+static	char	*_wget_cookies = NULL;
 static  int	_session_flags = 0;
 
 /* 
@@ -194,7 +195,7 @@ char *url_reform(char *url, char *buffer, int blen)
 	}
 	for (i = k = 0; url[k]; i++, k++) {
 		buffer[i] = url[k];
-		if (!strncmp(&url[k], "&amp;", 5)) {
+		if (!strx_strncmp(&url[k], "&amp;")) {
 			k += 4;
 		}
 	}
@@ -224,7 +225,7 @@ int url_get_index(char *s, char *key, int klen)
 
 int url_is_remote(char *s)
 {
-	return (!strncmp(s, "http://", 7) || !strncmp(s, "https://", 8));
+	return (!strx_strncmp(s, "http://") || !strx_strncmp(s, "https://"));
 }
 
 int url_is_image(char *url)
@@ -290,6 +291,12 @@ char *strx_strncpy(char *dest, const char *src, size_t n)
 	dest[n-1] = 0;
 	return dest;
 }
+
+int strx_strncmp(char *dest, const char *src)
+{
+	return strncmp(dest, src, strlen(src));
+}
+
 
 /* copy contents between 'from' and 'to', not include 'to', to 'dest'
  * ended with appended '\0' */
@@ -683,10 +690,14 @@ int sys_download_m3u8(char *url, char *fname)
 /* 20230104 Fixed the "ERROR: The certificate of `www.dropbox.com' is not trusted." issue 
  * https://stackoverflow.com/questions/9224298/how-do-i-fix-certificate-errors-when-running-
  *      wget-on-an-https-url-in-cygwin */
+/* 20230131 Added cookies
+ * https://stackoverflow.com/questions/1324421/how-to-get-past-the-login-page-with-wget
+ * */
 int sys_download_wget(char *url, char *fname)
 {
-	char	*wget_tbl[] = { "-O" };
+	char	*wget_tbl[] = { "-O", "--load-cookies" };
 	char	*argv[64] = { "wget", "-U", BROWSER, "-t", "1", "-T", "60", "--no-check-certificate", NULL };
+	//char	*argv[64] = { "wget", "--load-cookies", "cookies.txt", NULL };
 	int	i, rcode;
 
 	for (i = 0; argv[i]; i++);	// i = 5;
@@ -694,6 +705,10 @@ int sys_download_wget(char *url, char *fname)
 	if (fname) {
 		argv[i++] = wget_tbl[0];
 		argv[i++] = fname;
+	}
+	if (_wget_cookies) {
+		argv[i++] = wget_tbl[1];
+		argv[i++] = _wget_cookies;
 	}
 	if (url) {
 		argv[i++] = url_reform(url, NULL, 0);
@@ -769,10 +784,13 @@ int sys_download_wget_page(char *url, char *fname)
 	return ERR_DL_PAGE;
 }
 
-void sys_download_proxy_open(char *proxy)
+int sys_download_proxy_open(char *proxy)
 {
-	sys_download_proxy_close();
-	_wget_proxy = strx_alloc(proxy, 0);
+	if (proxy) {
+		sys_download_proxy_close();
+		_wget_proxy = strx_alloc(proxy, 0);
+	}
+	return _wget_proxy ? 1 : 0;
 }
 
 void sys_download_proxy_close(void)
@@ -782,6 +800,26 @@ void sys_download_proxy_close(void)
 	}
 	_wget_proxy = NULL;
 }
+
+int sys_download_cookies_open(char *cookie)
+{
+	if (cookie) {
+		sys_download_cookies_close();
+		_wget_cookies = realpath(cookie, NULL);
+	}
+	return _wget_cookies ? 1 : 0;
+}
+
+void sys_download_cookies_close(void)
+{
+	if (_wget_cookies) {
+		free(_wget_cookies);
+	}
+	_wget_cookies = NULL;
+}
+
+
+
 
 int sys_delay(void)
 {

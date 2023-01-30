@@ -31,6 +31,7 @@ static int e_hentai_synopsis(char *webpage, char *buf, int len);
 static int e_hentai_session_page(char *webpage);
 static int e_hentai_session_url(char *url);
 static int e_hentai_download(char *urbuf, int *now, int *last);
+static int e_hentai_try_orignal(EHBUF *ehbuf, char *fname);
 static char *e_hentai_load_webpage(char *url, char *fname, int fnlen);
 static int e_hentai_dump_url(EHBUF *ehbuf);
 static char *e_hentai_find_url(EHBUF *ehbuf, int cmd);
@@ -531,10 +532,12 @@ static int e_hentai_download(char *urbuf, int *now, int *last)
 			rc = 2;
 		} else {
 			fname = e_hentai_image_name(url, cpage, *last);
-			if (sys_download_wget_image(url, fname) != 0) {
-				slog("%s : failed to get %s\n", cpage, 
-						e_hentai_url_filename(url, NULL, 0));
-				rc = 3;
+			if (e_hentai_try_orignal(ehbuf, fname) != 0) {
+				if (sys_download_wget_image(url, fname) != 0) {
+					slog("%s : failed to get %s\n", cpage, 
+							e_hentai_url_filename(url, NULL, 0));
+					rc = 3;
+				}
 			}
 		}
 	}
@@ -570,6 +573,20 @@ static int e_hentai_download(char *urbuf, int *now, int *last)
 	return rc ? rc : 1;	/* move to next URL */
 }
 
+static int e_hentai_try_orignal(EHBUF *ehbuf, char *fname)
+{
+	char	*url;
+
+	if ((url = e_hentai_find_url(ehbuf, URL_CMD_ORIGIN)) == NULL) {
+		return 1;	/* not available */
+	}
+	if (sys_download_cookies_open(NULL) == 0) {
+		return 2;	/* require cookies */
+	}
+	/* just try once, no retry if failed */
+	return sys_download_wget(url, fname);
+}
+
 static char *e_hentai_load_webpage(char *url, char *fname, int fnlen)
 {
 	char	localfile[1024];
@@ -602,8 +619,10 @@ static int e_hentai_dump_url(EHBUF *ehbuf)
 		url = e_hentai_find_url(ehbuf, URL_CMD_NEXT);
 		printf("Next Page:  %s (%d)\n", 
 				url, e_hentai_trap(url));
-		printf("Front Page:  %s\n", 
+		printf("Front Page: %s\n", 
 				e_hentai_find_url(ehbuf, URL_CMD_BACK));
+		printf("Original:   %s\n",
+				e_hentai_find_url(ehbuf, URL_CMD_ORIGIN));
 		printf("Image URL:  %s\n\n", 
 				e_hentai_find_url(ehbuf, URL_CMD_IMAGE));
 	}
@@ -670,6 +689,11 @@ static char *e_hentai_find_url(EHBUF *ehbuf, int cmd)
 				return ehbuf->urlist[i][0];
 			}
 			break;
+		case URL_CMD_ORIGIN:
+			if ((ehbuf->urlist[i][0] == ehbuf->urlist[i][1]) && !ehbuf->urlist[i][2]) {
+				return ehbuf->urlist[i][0];
+			}
+			break;
 		case URL_CMD_IMAGE:
 			//printf("%s | %s\n", (ehbuf->urlist[i][0]), (ehbuf->urlist[i][1]));
 			if (e_hentai_dict_lookup(ehbuf->urlist[i], dict_next, -1, "next")) {
@@ -730,7 +754,7 @@ static EHBUF *e_hentai_url_list(char *webpage)
 	while ((p = strstr(p, "href=\"")) != NULL) {
 		/* find the 'id' tag */
 		for (q = p; *q != '<'; q--);
-		//if (!strncmp(q, "<a id=\"", 7)) {
+		//if (!strx_strncmp(q, "<a id=\"")) {
 		ehbuf->urlist[n][2] = htm_tag_pick(q, "id=\"", "\"", NULL, -1);
 		//}
 
@@ -738,7 +762,7 @@ static EHBUF *e_hentai_url_list(char *webpage)
 		ehbuf->urlist[n][0] = htm_tag_pick(p, "href=\"", "\"", NULL, -1);
 		p += strlen(p) + 1;
 
-		if (!strncmp(p, "><img src=\"", 11)) {
+		if (!strx_strncmp(p, "><img src=\"")) {
 			ehbuf->urlist[n][1] = htm_tag_pick(p, "><img src=\"", "\"", NULL, -1);
 			p += strlen(p) + 1;
 			n++;
@@ -747,9 +771,26 @@ static EHBUF *e_hentai_url_list(char *webpage)
 			}
 		}
 		/* 20130905 ehentai seems updated their webpages */
-		else if (!strncmp(p, "><img id=\"img\" src=\"", 20)) {
+		else if (!strx_strncmp(p, "><img id=\"img\" src=\"")) {
 			ehbuf->urlist[n][1] = htm_tag_pick(p, "><img id=\"img\" src=\"", "\"", NULL, -1);
 			p += strlen(p) + 1;
+			n++;
+			if (n >= MAX_URL_LIST) {
+				break;
+			}
+		}
+		/* 20230130 Download original
+		 * Some session page includes a link to the original picture, which 
+		 * usually larger than the display picture. Note that accessing the 
+		 * original picture requiring login via cookies.
+		 *   <div id="i7" class="if"> &nbsp;<img src="https://ehgt.org/g/mr.gif" class="mr" />
+		 *   <a href="https://e-hentai.org/fullimg.php?gid=2449394&amp;page=1&amp;key=oi9a1v39z04">
+		 *   Download original 1280 x 2048 3.21 MB source</a></div>
+		 */
+		else if (!strx_strncmp(p, ">Download original")) {
+			/* In that case, there's no "<a id=" so ehbuf->urlist[n][2] is NULL
+			 * ehbuf->urlist[n][0] is the image url */
+			ehbuf->urlist[n][1] = ehbuf->urlist[n][0];
 			n++;
 			if (n >= MAX_URL_LIST) {
 				break;

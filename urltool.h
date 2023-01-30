@@ -25,6 +25,7 @@
 #define URL_CMD_PREV		3
 #define URL_CMD_IMAGE		4
 #define URL_CMD_BACK		5
+#define URL_CMD_ORIGIN		6
 #define URL_CMD_ALL		9
 
 #define DOWNLOAD_INTERVAL	5
@@ -49,6 +50,7 @@ char *url_image_sn(int curr, int last);
 int strx_blankline(char *s);
 char *strx_alloc(char *s, unsigned extra);
 char *strx_strncpy(char *dest, const char *src, size_t n);
+int strx_strncmp(char *dest, const char *src);
 int strx_memcpy(char *dest, int dlen, char *from, char *to);
 void strx_puts(char *s, int n);
 void strx_putx(char *s, int n);
@@ -66,8 +68,10 @@ int sys_download_m3u8(char *url, char *fname);
 int sys_download_wget(char *url, char *fname);
 int sys_download_wget_image(char *url, char *fname);
 int sys_download_wget_page(char *url, char *fname);
-void sys_download_proxy_open(char *proxy);
+int sys_download_proxy_open(char *proxy);
 void sys_download_proxy_close(void);
+int sys_download_cookies_open(char *cookie);
+void sys_download_cookies_close(void);
 int sys_delay(void);
 
 int cflags_argvs(int c);

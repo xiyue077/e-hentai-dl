@@ -89,6 +89,7 @@ Usage: e-hentai-dl [-d][-s][-p] [html_page|URL]\n\
   -u,--unsort        do not prefix the sorting number to images\n\
   -d[a|i]            dump URL of [all|image] in the page\n\
   -p,--proxy URL     specify a proxy server\n\
+  -o,--cookie FILE   specify a cookie file for wget\n\
      --help          help and more helps by '-'\n\
      --version\n\
 \n\
@@ -107,13 +108,13 @@ int main(int argc, char **argv)
 		} else if (!strcmp(*argv, "--version")) {
 			printf("Version %s\n", VERSION);
 			return 0;
-		} else if (!strncmp(*argv, "--help-", 7)) {
+		} else if (!strx_strncmp(*argv, "--help-")) {
 			return dispatch_by_unit_test(argc, argv);
 		} else if (!strcmp(*argv, "-s") || !strcmp(*argv,"--single")) {
 			cflags_argvs('s');
 		} else if (!strcmp(*argv, "-k") || !strcmp(*argv,"--keep-webpage")) {
 			cflags_argvs('k');
-		} else if (!strncmp(*argv, "-d", 2)) {
+		} else if (!strx_strncmp(*argv, "-d")) {
 			cflags_argvs(argv[0][2]);
 		} else if (!strcmp(*argv, "-u") || !strcmp(*argv,"--unsort")) {
 			cflags_argvs('u');
@@ -123,6 +124,12 @@ int main(int argc, char **argv)
 				return -1;
 			}
 			sys_download_proxy_open(*++argv);
+		} else if (!strcmp(*argv, "-o") || !strcmp(*argv, "--cookie")) {
+			if (--argc < 1) {
+				printf("Missing options!\n");
+				return -1;
+			}
+			sys_download_cookies_open(*++argv);
 		} else if (!strcmp(*argv, "-c") || !strcmp(*argv, "--cleanup")) {
 			while (--argc) {
 				e_hentai_cleanup(*++argv);
@@ -265,11 +272,11 @@ static char *e_hentai_make_folder(char *fname)
 	author[0] = title[0] = 0;
 	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		strx_strrpch(buf, 1, '\n', 0);		/* chop the tailing '\n' */
-		if (!strncmp(buf, "Title: ", 7)) {
+		if (!strx_strncmp(buf, "Title: ")) {
 			strx_strncpy(title, buf + 7, sizeof(title));
 			continue;
 		}
-		if (!strncmp(buf, "Artist: ", 8)) {
+		if (!strx_strncmp(buf, "Artist: ")) {
 			strx_strncpy(author,  buf + 8, sizeof(author));
 			continue;
 		}

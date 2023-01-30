@@ -75,7 +75,7 @@ static int xvideos_video_page(char *webpage, char *fpage)
 		urlidx[i] += strlen("html5player.setVideo");
 		next = strchr(urlidx[i], ')') + 1;
 
-		if (strncmp(urlidx[i], "Url", 3) && strncmp(urlidx[i], "HLS", 3)) {
+		if (strx_strncmp(urlidx[i], "Url") && strx_strncmp(urlidx[i], "HLS")) {
 			urlidx[i--] = NULL;
 			continue;
                 }
@@ -116,7 +116,7 @@ static int xvideos_video_page(char *webpage, char *fpage)
 
 	if (cflags_check(CFLAGS_DUMP)) {
 		for (i = 0; urlidx[i]; i++) {
-			if (!strncmp(urlidx[i], "http", 4)) {
+			if (!strx_strncmp(urlidx[i], "http")) {
 				htm_common_pick(urlidx[i], NULL, "\"", vidlink, sizeof(vidlink));
 			} else {
 				htm_common_pick(urlidx[i], "('", "')", vidlink, sizeof(vidlink));
@@ -132,12 +132,12 @@ static int xvideos_video_page(char *webpage, char *fpage)
 
 	/* pick high resolution first; otherwise choose the last one */
 	for (i = 0; urlidx[i]; i++) {
-		if (!strncmp(urlidx[i], "HLS(", 4)) {
+		if (!strx_strncmp(urlidx[i], "HLS(")) {
 			goto foundit;
 		}
 	}
 	for (i = 0; urlidx[i]; i++) {
-		if (!strncmp(urlidx[i], "UrlHigh(", 8)) {
+		if (!strx_strncmp(urlidx[i], "UrlHigh(")) {
 			goto foundit;
 		}
 	}
@@ -160,7 +160,7 @@ foundit:
 
 	printf("Downloading %s ...\n", vidlink);
 	if (cflags_check(CFLAGS_MEDIA)) {
-		if (!strncmp(urlidx[i], "HLS(", 4)) {
+		if (!strx_strncmp(urlidx[i], "HLS(")) {
 			xvideos_sort_m3u8(vidlink);
 			printf("Refined %s ...\n", vidlink);
 			rc = sys_download_m3u8(vidlink, title);

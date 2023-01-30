@@ -72,7 +72,7 @@ static int motherless_video_page(char *webpage, char *fpage)
 	
 	/* easy pick: the last one */
 	for (i = 0; urlidx[i]; i++) {
-		if (!strncmp(urlidx[i], "__fileurl", 9)) {
+		if (!strx_strncmp(urlidx[i], "__fileurl")) {
 			htm_common_pick(urlidx[i], "'", "'", vidlink, sizeof(vidlink));
 		} else {
 			htm_tag_pick(urlidx[i], "src=\"", "\"", vidlink, sizeof(vidlink));
