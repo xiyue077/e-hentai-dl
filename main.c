@@ -260,6 +260,14 @@ static int dispatch_by_page_file(char *fpage)
 	return rc;
 }
 
+
+/* pdftohtml -i -stdout 3d-SingleArt.pdf > standard.htm
+ * pdfimages -all 3d-SingleArt.pdf standard
+ */
+static int dispatch_by_pdf(char *pdffile)
+{
+}
+
 static char *e_hentai_make_folder(char *fname)
 {
 	FILE	*fp;

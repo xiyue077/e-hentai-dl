@@ -18,6 +18,7 @@
 #define CFLAGS_SORT		0x200
 #define CFLAGS_MEDIA		0x400
 #define CFLAGS_KEEP_PAGE	0x800
+#define CFLAGS_COOKIE		0x1000
 
 #define URL_CMD_FIRST		0
 #define URL_CMD_LAST		1

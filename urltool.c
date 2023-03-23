@@ -706,7 +706,7 @@ int sys_download_wget(char *url, char *fname)
 		argv[i++] = wget_tbl[0];
 		argv[i++] = fname;
 	}
-	if (_wget_cookies) {
+	if (_wget_cookies && cflags_check(CFLAGS_COOKIE)) {
 		argv[i++] = wget_tbl[1];
 		argv[i++] = _wget_cookies;
 	}

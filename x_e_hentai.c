@@ -576,6 +576,7 @@ static int e_hentai_download(char *urbuf, int *now, int *last)
 static int e_hentai_try_orignal(EHBUF *ehbuf, char *fname)
 {
 	char	*url;
+	int	rc;
 
 	if ((url = e_hentai_find_url(ehbuf, URL_CMD_ORIGIN)) == NULL) {
 		return 1;	/* not available */
@@ -583,8 +584,13 @@ static int e_hentai_try_orignal(EHBUF *ehbuf, char *fname)
 	if (sys_download_cookies_open(NULL) == 0) {
 		return 2;	/* require cookies */
 	}
-	/* just try once, no retry if failed */
-	return sys_download_wget(url, fname);
+
+	/* just try once, no retry if failed
+	 * only turn on the cookies while downloading the picture */
+	cflags_set(CFLAGS_COOKIE);
+	rc = sys_download_wget(url, fname);
+	cflags_clear(CFLAGS_COOKIE);
+	return rc;
 }
 
 static char *e_hentai_load_webpage(char *url, char *fname, int fnlen)
@@ -770,7 +776,12 @@ static EHBUF *e_hentai_url_list(char *webpage)
 				break;
 			}
 		}
-		/* 20130905 ehentai seems updated their webpages */
+		/* 20130905 ehentai seems updated their webpages
+		 *   <a onclick="return load_image(148,'144e04abd9')" href="https://e-hentai.org/s/144e04abd9/
+		 *   2395276-148"><img id="img" src="https://fzqcalj.czofmljnxqaw.hath.network:7777/h/
+		 *   45450cbf5114247adcb27eeec04f3bfed54bcb62-127691-1280-720-jpg/keystamp=1675099200-
+		 *   ad9f6698cf;fileindex=117627751;xres=1280/0147.jpg" style="height:720px;width:1280px" 
+		 *   onerror="this.onerror=null; nl('40866-465305')" /></a> */
 		else if (!strx_strncmp(p, "><img id=\"img\" src=\"")) {
 			ehbuf->urlist[n][1] = htm_tag_pick(p, "><img id=\"img\" src=\"", "\"", NULL, -1);
 			p += strlen(p) + 1;
