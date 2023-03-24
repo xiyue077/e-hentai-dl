@@ -603,6 +603,119 @@ int htm_break(char *fname)
 	return 0;
 }
 
+
+FILE *sys_pipe_read(char *cmd, ...)
+{
+	va_list	ap;
+	char	*argv[64];
+	int	i, fd[2];
+
+	va_start(ap, cmd);
+	argv[0] = cmd;
+	for (i = 1; i < 64; i++) {
+		argv[i] = va_arg(ap, char *);
+		if (argv[i] == NULL) {
+			break;
+		}
+	}
+	va_end(ap);
+
+	pipe(fd);
+
+	if (fork() == 0) {
+		close(fd[0]);	/* Child process closes up input side of pipe */
+		
+		/* redirect the standard output to pipe */
+		//close(1), dup(fd[1]);	
+		dup2(fd[1], 1);
+
+		if (_wget_proxy) {
+			setenv("http_proxy", _wget_proxy, 1);
+			printf("Proxy: %s\n", _wget_proxy);
+		} else {
+			printf("Proxy: none\n");
+		}
+		execvp(argv[0], argv);
+		return NULL;
+	}
+
+	close(fd[1]);	/* Parent process closes up output side of pipe */
+	return fdopen(fd[0], "r");
+}
+
+FILE *sys_pipe_write(char *cmd, ...)
+{
+	va_list	ap;
+	char	*argv[64];
+	int	i, fd[2];
+
+	va_start(ap, cmd);
+	argv[0] = cmd;
+	for (i = 1; i < 64; i++) {
+		argv[i] = va_arg(ap, char *);
+		if (argv[i] == NULL) {
+			break;
+		}
+	}
+	va_end(ap);
+
+	pipe(fd);
+
+	if (fork() == 0) {
+		close(fd[1]);	/* Child process closes up output side of pipe */
+		
+		/* redirect the standard output to pipe */
+		//close(0), dup(fd[0]);	
+		dup2(fd[0], 0);
+
+		if (_wget_proxy) {
+			setenv("http_proxy", _wget_proxy, 1);
+			printf("Proxy: %s\n", _wget_proxy);
+		} else {
+			printf("Proxy: none\n");
+		}
+		execvp(argv[0], argv);
+		return NULL;
+	}
+
+	close(fd[0]);	/* Parent process closes up input side of pipe */
+	return fdopen(fd[1], "w");
+}
+
+
+int sys_exec_generic(char *cmd, ...)
+{
+	va_list	ap;
+	char	*argv[64];
+	int	i, rcode;
+
+	va_start(ap, cmd);
+	argv[0] = cmd;
+	for (i = 1; i < 64; i++) {
+		argv[i] = va_arg(ap, char *);
+		if (argv[i] == NULL) {
+			break;
+		}
+	}
+	va_end(ap);
+
+	if (fork() == 0) {
+		if (_wget_proxy) {
+			setenv("http_proxy", _wget_proxy, 1);
+			printf("Proxy: %s\n", _wget_proxy);
+		} else {
+			printf("Proxy: none\n");
+		}
+		execvp(argv[0], argv);
+		return -1;
+	}
+
+	wait(&rcode);
+	printf("%s returns: %d\n", cmd, rcode);
+	return rcode;
+}
+
+
 /* wrapper of youtube-dl
  * proxy: username:passwd@10.20.30.40:1234 or
  * http://hniksic:mypassword@proxy.company.com:8001/ */

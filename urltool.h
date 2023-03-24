@@ -64,6 +64,9 @@ char *htm_tag_pick(char *s, char *from, char *to, char *buf, int blen);
 char *htm_common_pick(char *s, char *from, char *to, char *buf, int blen);
 int htm_break(char *fname);
 
+FILE *sys_pipe_read(char *cmd, ...);
+FILE *sys_pipe_write(char *cmd, ...);
+int sys_exec_generic(char *cmd, ...);
 int sys_download_ytdl(char *url);
 int sys_download_m3u8(char *url, char *fname);
 int sys_download_wget(char *url, char *fname);

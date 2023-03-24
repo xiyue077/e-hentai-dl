@@ -17,6 +17,8 @@ done
 #include <string.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "urltool.h"
 
@@ -78,6 +80,8 @@ static int dispatch_by_url_list(char *fname);
 static int dispatch_by_url(char *urlraw);
 static int dispatch_by_page_file(char *fpage);
 static void dispatch_by_statement(int opt);
+static int dispatch_by_pdf(char *pdffile);
+static int url_is_pdf(char *fname);
 static char *e_hentai_make_folder(char *fname);
 static int e_hentai_cleanup(char *fname);
 
@@ -152,6 +156,8 @@ int main(int argc, char **argv)
 	while (argc--) {
 		if (url_is_remote(*argv))  {
 			dispatch_by_url(*argv);
+		} else if (url_is_pdf(*argv)) {
+			dispatch_by_pdf(*argv);
 		} else { /* given the local file, could be webpage or url list */
 			dispatch_by_url_list(*argv);
 		}
@@ -261,12 +267,99 @@ static int dispatch_by_page_file(char *fpage)
 }
 
 
-/* pdftohtml -i -stdout 3d-SingleArt.pdf > standard.htm
+/* Need to install poppler-utils first
+ * pdftohtml -i -stdout 3d-SingleArt.pdf > standard.htm
  * pdfimages -all 3d-SingleArt.pdf standard
+ * image name will be changed according to the Table of Content / Document Outline
  */
 static int dispatch_by_pdf(char *pdffile)
 {
+	FILE	*fp;
+	char	buf[512], tmpname[64], fname[PATH_MAX], extname[64];
+	char	*path, *sp, cwd[PATH_MAX];
+	int	n = 0;
+
+	/* the path is the pdf file without the suffix .pdf */
+	if ((path = strx_alloc(pdffile, 64)) == NULL) {
+		return -1;
+	}
+	if ((sp = strrchr(path, '.')) == NULL) {	/* no suffix so make up one */
+		strcat(path, ".dir");
+	} else {
+		*sp = 0;
+	}
+
+	mkdir(path, 0755);
+	/*if (mkdir(path, 0755) < 0) {
+		free(path);
+		return -2;
+	}*/
+
+	/* point the 'sp' to the end of path for further use */
+	strcat(path, "/");
+	sp = path + strlen(path);
+
+	/* release all images into the specified path */
+	strcpy(sp, "tmp");
+	sys_exec_generic("pdfimages", "-all", pdffile, path, NULL);
+	
+
+	if ((fp = sys_pipe_read("pdftohtml", "-i", "-stdout", pdffile, NULL)) == NULL) {
+		return -1;
+	}
+
+	/* move to the working dir */
+	*sp = 0;
+	getcwd(cwd, sizeof(cwd));
+	chdir(path);
+	
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
+		if (strx_strncmp(buf, "<li><a href=")) {
+			continue;
+		}
+		htm_doc_pick(buf, NULL, "<a href=", "</a>", fname, sizeof(fname));
+
+		/* extract the extension name */
+		if ((sp = strrchr(fname, '.')) == NULL) {
+			extname[0] = 0;
+		} else {
+			strx_strncpy(extname, sp, sizeof(extname));
+		}
+
+		sprintf(tmpname, "tmp-%03d%s", n, extname);
+		if (access(tmpname, F_OK|W_OK)) {
+			printf("%s: not found (for %s)\n", tmpname, fname);
+		} else {
+			//printf("rename %s %s\n", tmpname, fname);
+			rename(tmpname, fname);
+		}
+		n++;
+	}
+	chdir(cwd);
+	fclose(fp);
+	return 0;
 }
+
+static int url_is_pdf(char *fname)
+{
+	FILE	*fp;
+	char	*s, buf[32];
+
+	if ((s = strrchr(fname, '.')) != NULL) {
+		if (!strcmp(s, ".pdf") || !strcmp(s, ".PDF")) {
+			return 1;
+		}
+	}
+	if ((fp = fopen(fname, "r")) != NULL) {
+		fread(buf, 1, 8, fp);
+		fclose(fp);
+		if (!strx_strncmp(buf, "%PDF")) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
 
 static char *e_hentai_make_folder(char *fname)
 {
