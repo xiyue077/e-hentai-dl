@@ -636,6 +636,7 @@ FILE *sys_pipe_read(char *cmd, ...)
 			printf("Proxy: none\n");
 		}
 		execvp(argv[0], argv);
+		fprintf(stderr, "%s: execute failed.\n", argv[0]);
 		return NULL;
 	}
 
@@ -675,6 +676,7 @@ FILE *sys_pipe_write(char *cmd, ...)
 			printf("Proxy: none\n");
 		}
 		execvp(argv[0], argv);
+		fprintf(stderr, "%s: execute failed.\n", argv[0]);
 		return NULL;
 	}
 
@@ -683,6 +685,8 @@ FILE *sys_pipe_write(char *cmd, ...)
 }
 
 
+/* proxy: username:passwd@10.20.30.40:1234 or
+ * http://hniksic:mypassword@proxy.company.com:8001/ */
 int sys_exec_generic(char *cmd, ...)
 {
 	va_list	ap;
@@ -707,49 +711,15 @@ int sys_exec_generic(char *cmd, ...)
 			printf("Proxy: none\n");
 		}
 		execvp(argv[0], argv);
+		fprintf(stderr, "%s: execute failed.\n", argv[0]);
 		return -1;
 	}
 
 	wait(&rcode);
-	printf("%s returns: %d\n", cmd, rcode);
+	//printf("%s returns: %d\n", cmd, rcode);
 	return rcode;
 }
 
-
-/* wrapper of youtube-dl
- * proxy: username:passwd@10.20.30.40:1234 or
- * http://hniksic:mypassword@proxy.company.com:8001/ */
-int sys_download_ytdl(char *url)
-{
-	char	*argv[64] = { "youtube-dl", NULL };
-	int	i, rcode;
-
-	for (i = 0; argv[i]; i++);
-
-	/*if (url) {
-		argv[i++] = url_reform(url, NULL, 0);
-	}*/
-	argv[i++] = url;
-	argv[i++] = NULL;
-
-	/*for (i = 0; argv[i]; printf("%s ", argv[i++])); 
-	puts("");*/
-
-	if (fork() == 0) {
-		if (_wget_proxy) {
-			setenv("http_proxy", _wget_proxy, 1);
-			printf("Proxy: %s\n", _wget_proxy);
-		} else {
-			printf("Proxy: none\n");
-		}
-		execvp(argv[0], argv);
-		return -1;
-	}
-
-	wait(&rcode);
-	printf("Youtube-dl returns: %d\n", rcode);
-	return rcode;
-}
 
 
 /* wrapper of ffmpeg; seems the ffmpeg will pick the highest resolution itself.
@@ -762,39 +732,10 @@ int sys_download_ytdl(char *url)
  * */
 int sys_download_m3u8(char *url, char *fname)
 {
-	char	*argv[64] = { "ffmpeg", "-i", NULL, "-c", "copy", "-f", "mpegts", NULL, NULL };
-	int	i, rcode;
-
-	for (i = 0; argv[i]; i++);
-
 	/*if (url) {
-		argv[i++] = url_reform(url, NULL, 0);
+		url = url_reform(url, NULL, 0);
 	}*/
-	argv[i++] = url;
-
-	for (i = 0; argv[i]; i++);
-	argv[i++] = fname;
-
-#if 0
-	for (i = 0; argv[i]; printf("%s ", argv[i++])); 
-	puts("");
-	rcode = 0;
-#else
-	if (fork() == 0) {
-		if (_wget_proxy) {
-			setenv("http_proxy", _wget_proxy, 1);
-			printf("Proxy: %s\n", _wget_proxy);
-		} else {
-			printf("Proxy: none\n");
-		}
-		execvp(argv[0], argv);
-		return -1;
-	}
-
-	wait(&rcode);
-	printf("FFMPEG returns: %d\n", rcode);
-#endif
-	return rcode;
+	return sys_exec_generic("ffmpeg", "-i", url, "-c", "copy", "-f", "mpegts", fname, NULL);
 }
 
 
@@ -806,6 +747,22 @@ int sys_download_m3u8(char *url, char *fname)
 /* 20230131 Added cookies
  * https://stackoverflow.com/questions/1324421/how-to-get-past-the-login-page-with-wget
  * */
+int sys_download_wget(char *url, char *fname)
+{
+	if (!url || !fname) {
+		return -1;
+	}
+	url = url_reform(url, NULL, 0);
+
+	if (_wget_cookies && cflags_check(CFLAGS_COOKIE)) {
+		return sys_exec_generic("wget", "-U", BROWSER, "-t", "1", "-T", "60", "--no-check-certificate", 
+				"-O", fname, "--load-cookies", _wget_cookies, url, NULL);
+	}
+	return sys_exec_generic("wget", "-U", BROWSER, "-t", "1", "-T", "60", "--no-check-certificate", 
+			"-O", fname, url, NULL);
+}
+
+#if 0
 int sys_download_wget(char *url, char *fname)
 {
 	char	*wget_tbl[] = { "-O", "--load-cookies" };
@@ -847,6 +804,7 @@ int sys_download_wget(char *url, char *fname)
 	printf("WGET returns: %d\n", rcode);
 	return rcode;
 }
+#endif
 
 /* 20220629 do not using sys_download_wget_image() in webpages.
  * it will add a digit in every retry. It's fine with pic.jpg.0, pic.jpg.1, ...

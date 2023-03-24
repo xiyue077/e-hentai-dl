@@ -22,7 +22,7 @@ done
 
 #include "urltool.h"
 
-#define VERSION		"3.2"
+#define VERSION		"3.3"
 #define DEF_FLAGS	(CFLAGS_DUMP | CFLAGS_MEDIA | CFLAGS_CONTINUOUS | CFLAGS_SORT)
 
 int e_hentai_test(int argc, char **argv);
@@ -236,7 +236,7 @@ static int dispatch_by_url(char *urlraw)
 	}
 	if (!extractor[i].pattern_url) {
 		/* no extractor for this url, try youtube-dl */
-		rc = sys_download_ytdl(url);
+		rc = sys_exec_generic("youtube-dl", url, NULL);
 	}
 	free(url);
 	return rc;
