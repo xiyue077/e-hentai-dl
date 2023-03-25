@@ -275,7 +275,7 @@ static int dispatch_by_page_file(char *fpage)
 static int dispatch_by_pdf(char *pdffile)
 {
 	FILE	*fp;
-	char	buf[512], tmpname[64], fname[PATH_MAX], extname[64];
+	char	buf[512], tmpname[64], fname[PATH_MAX], extname[32];
 	char	*path, *sp, cwd[PATH_MAX];
 	int	n = 0;
 
@@ -300,7 +300,7 @@ static int dispatch_by_pdf(char *pdffile)
 	sp = path + strlen(path);
 
 	/* release all images into the specified path */
-	strcpy(sp, "tmp");
+	strcpy(sp, "zzz");
 	sys_exec_generic("pdfimages", "-all", pdffile, path, NULL);
 	
 
@@ -326,7 +326,13 @@ static int dispatch_by_pdf(char *pdffile)
 			strx_strncpy(extname, sp, sizeof(extname));
 		}
 
-		sprintf(tmpname, "tmp-%03d%s", n, extname);
+		/* pdfimages can't extract gif images. It generates two png files instead */
+		if (!strcmp(extname, ".gif")) {
+			sprintf(tmpname, "zzz-%03d%s", n++, ".png");
+			strcpy(sp, ".png");	/* target name changes accordingly */
+		} else {
+			sprintf(tmpname, "zzz-%03d%s", n, extname);
+		}
 		if (access(tmpname, F_OK|W_OK)) {
 			printf("%s: not found (for %s)\n", tmpname, fname);
 		} else {
