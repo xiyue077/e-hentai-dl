@@ -87,26 +87,29 @@ int e_hentai_test(int argc, char **argv)
 	
 	/* one argument section */
 	if (!strcmp(*argv, "--help-url")) {
-		webpage = htm_alloc(argv[1], 0, NULL);
-		if ((ehbuf = e_hentai_url_list(webpage)) != NULL) {
-			e_hentai_find_url(ehbuf, URL_CMD_ALL);
-			free(ehbuf);
+		if ((webpage = htm_alloc(argv[1], 0, NULL)) != NULL) {
+			if ((ehbuf = e_hentai_url_list(webpage)) != NULL) {
+				e_hentai_find_url(ehbuf, URL_CMD_ALL);
+				free(ehbuf);
+			}
+			free(webpage);
 		}
-		free(webpage);
 	} else if (!strcmp(*argv, "--help-dump")) {
-		webpage = htm_alloc(argv[1], 0, NULL);
-		if ((ehbuf = e_hentai_url_list(webpage)) != NULL) {
-			e_hentai_dump_url(ehbuf);
-			free(ehbuf);
+		if ((webpage = htm_alloc(argv[1], 0, NULL)) != NULL) {
+			if ((ehbuf = e_hentai_url_list(webpage)) != NULL) {
+				e_hentai_dump_url(ehbuf);
+				free(ehbuf);
+			}
+			free(webpage);
 		}
-		free(webpage);
 	} else if (!strcmp(*argv, "--help-html")) {
 		htm_break(argv[1]);
 	} else if (!strcmp(*argv, "--help-synopsis")) {
-		webpage = htm_alloc(argv[1], 0, NULL);
-		i = e_hentai_synopsis(webpage, key, sizeof(key));
-		printf("%d: %s\n", i, key);
-		free(webpage);
+		if ((webpage = htm_alloc(argv[1], 0, NULL)) != NULL) {
+			i = e_hentai_synopsis(webpage, key, sizeof(key));
+			printf("%d: %s\n", i, key);
+			free(webpage);
+		}
 	} else if (!strcmp(*argv, "--help-download")) {
 		strx_strncpy(key, argv[1], sizeof(key));
 		rc = e_hentai_download(key, &i, &k);
@@ -124,16 +127,17 @@ int e_hentai_test(int argc, char **argv)
 		rc = e_hentai_front_url(key);
 	} else if (!strcmp(*argv, "--help-update")) {
 		for (i = 1; i < argc; i++) {
-			webpage = htm_alloc(argv[i], 0, NULL);
-			if ((ehbuf = e_hentai_url_list(webpage)) != NULL) {
-				e_hentai_find_url(ehbuf, URL_CMD_FIRST);
-				e_hentai_find_url(ehbuf, URL_CMD_LAST);
-				e_hentai_find_url(ehbuf, URL_CMD_PREV);
-				e_hentai_find_url(ehbuf, URL_CMD_NEXT);
-				e_hentai_find_url(ehbuf, URL_CMD_BACK);
-				free(ehbuf);
+			if ((webpage = htm_alloc(argv[i], 0, NULL)) != NULL) {
+				if ((ehbuf = e_hentai_url_list(webpage)) != NULL) {
+					e_hentai_find_url(ehbuf, URL_CMD_FIRST);
+					e_hentai_find_url(ehbuf, URL_CMD_LAST);
+					e_hentai_find_url(ehbuf, URL_CMD_PREV);
+					e_hentai_find_url(ehbuf, URL_CMD_NEXT);
+					e_hentai_find_url(ehbuf, URL_CMD_BACK);
+					free(ehbuf);
+				}
+				free(webpage);
 			}
-			free(webpage);
 		}
 	}
 	return 0;
