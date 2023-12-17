@@ -1000,6 +1000,9 @@ static int e_hentai_trap(char *url)
  * not
  *   https://e-hentai.org/r/e1fb99c1ceb817f9843ae4536b13025553e69b6e-340368-1280-1639-jpg
  *   /forumtoken/1833366-1/00.jpg */
+/* 20231218: 
+ *   https://ziwgdfwwictwelwogupv.hath.network/om/3394274/54d8dd01fe6201d0c18fc0c1cbc895b2cc94cec7-102543-619-393-jpg/x/0/126bfeqtgy7zmw17vi4/1162416289532.jpg
+ */
 static int e_hentai_is_image_path(char *url)
 {
 	char	tmp[32];
@@ -1017,6 +1020,9 @@ static int e_hentai_is_image_path(char *url)
 		return 1;
 	}
 	if (!strcmp(tmp, "im")) {
+		return 1;
+	}
+	if (!strcmp(tmp, "om")) {
 		return 1;
 	}
 	return 0;
