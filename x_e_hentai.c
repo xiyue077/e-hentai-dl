@@ -333,6 +333,14 @@ static int e_hentai_synopsis(char *webpage, char *buf, int len)
 		fprintf(fp, "Artist: %s\n", doc);
 	}
 
+	/* find the uploader:
+	 * <a href="https://e-hentai.org/uploader/AndruXXXon">AndruXXXon</a>
+	 */
+	if (htm_doc_pick(webpage, NULL, "<a href=\"https://e-hentai.org/uploader/",
+				"</a>", doc, sizeof(doc)) != NULL) {
+		fprintf(fp, "Uploader: %s\n", doc);
+	}
+
 	/* <td class="ptds"><a href="https://e-hentai.org/g/1833366/392f0255bb/" 
 	 * onclick="return false">1</a> */
 	p = webpage;
