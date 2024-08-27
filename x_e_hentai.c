@@ -729,14 +729,23 @@ static char *e_hentai_find_url(EHBUF *ehbuf, int cmd)
 			if (e_hentai_dict_lookup(ehbuf->urlist[i], dict_next, -1, "next")) {
 				break;	/* image url has the same serial number, so -1 here */
 			}
+			/* 20240827 Do not check if the image connect to the first page
+			 * if there's only one page in the whole session
 			if (e_hentai_dict_lookup(ehbuf->urlist[i], dict_first, ehbuf->keysn[0], NULL)) {
 				break;
+			}*/
+			if (ehbuf->keysn[0] < ehbuf->keysn[3]) {
+				if (e_hentai_dict_lookup(ehbuf->urlist[i], dict_first, ehbuf->keysn[0], NULL)) {
+					break;
+				}
 			}
 			if (e_hentai_dict_lookup(ehbuf->urlist[i], dict_last, -1, NULL)) {
 				break;
 			}
-			if (e_hentai_dict_lookup(ehbuf->urlist[i], dict_prev, ehbuf->keysn[1], "prev")) {
-				break;
+			if (ehbuf->keysn[0] < ehbuf->keysn[3]) {
+				if (e_hentai_dict_lookup(ehbuf->urlist[i], dict_prev, ehbuf->keysn[1], "prev")) {
+					break;
+				}
 			}
 			if (url_get_index(ehbuf->urlist[i][0], NULL, 0) != ehbuf->keysn[2]) {
 				break;
