@@ -400,7 +400,9 @@ static int e_hentai_session_page(char *webpage)
 	 * If downloading failed, the current page would be zero-ed and not be able
 	 * to reload again. If succeed but reload failed, the current page would
 	 * permenantly turned into the previous page */
-	if((webpage = e_hentai_load_webpage(buf, NULL, 0)) == NULL) {
+	/* 20240827 using the 'fnlen' as a flag to tell the current page is the 
+	 * front page or the session page; the front page would be saved as .html */
+	if((webpage = e_hentai_load_webpage(buf, NULL, 1)) == NULL) {
 		return ERR_DL_PAGE;	/* failed to download again */
 	}
 	if ((ehbuf = e_hentai_url_list(webpage)) == NULL) {
@@ -597,6 +599,13 @@ static int e_hentai_try_orignal(EHBUF *ehbuf, char *fname)
 	return rc;
 }
 
+/* 20240827 using the 'fnlen' as a flag to tell the current page is the front
+ * page or the session page; the front page would be saved with a suffix. 
+ * So when calling this function: 
+ *  fname==NULL, fnlen==0: the front page like e5977d80be saved as e5977d80be.html
+ *  fname==NULL, fnlen!=0: the session page lile 313773-1
+ *  fname!=NULL, fnlen!=0: the session page lile 313773-2
+ * */
 static char *e_hentai_load_webpage(char *url, char *fname, int fnlen)
 {
 	char	localfile[1024];
@@ -604,7 +613,10 @@ static char *e_hentai_load_webpage(char *url, char *fname, int fnlen)
 	e_hentai_url_filename(url, localfile, sizeof(localfile));
 	if (fname) {
 		strx_strncpy(fname, localfile, fnlen);
+	} else if (fnlen == 0) {
+		strcat(localfile, ".html");
 	}
+
 	if (sys_download_wget_page(url, localfile) != 0) {
 		slog("%s : failed to retrieve the web page.\n", localfile);
 		return NULL;
