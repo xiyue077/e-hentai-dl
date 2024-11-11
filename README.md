@@ -36,6 +36,7 @@ When you modify/integrate/redistribute it, please keep this convention for other
 # OPTIONS
 
     -s, --single                         Download only one image and stop
+    -m, --multi NUM                      Download specified number of images
     -u, --unsort                         Do not prefix the sorting number to images
     -p, --proxy URL                      Specify a proxy server
     -h, --help                           Print this help text and exit
@@ -61,12 +62,26 @@ e-hentai-dl https://e-hentai.org/g/2327820/ac144bcd8c/
 ```
 It will create a directory 'ac144bcd8c' and store all images in it from that archive.
 
+### Download first 10 images from archive 2327820
+```
+e-hentai-dl -m 10 https://e-hentai.org/g/2327820/ac144bcd8c/
+```
+It will create a directory 'ac144bcd8c' and download first 10 images in it 
+from that archive. 
+
 ### Download since the 4th images from archive 2327820
 ```
 e-hentai-dl https://e-hentai.org/s/b9af28e243/2327820-4
 ```
 The URL points to '2327820-4' so it would download from the 4th image to the end. 
 All images will be stored in the current directory.
+
+### Download from the 4th to 18th images from archive 2327820
+```
+e-hentai-dl -m 15 https://e-hentai.org/s/b9af28e243/2327820-4
+```
+The URL points to '2327820-4' so it would download 15 images from the 4th image,
+which makes it 4th to 18th, included. All images will be stored in the current directory.
 
 ### Just download the 4th images from archive 2327820
 ```

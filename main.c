@@ -22,7 +22,7 @@ done
 
 #include "urltool.h"
 
-#define VERSION		"3.5"
+#define VERSION		"3.6"
 #define DEF_FLAGS	(CFLAGS_DUMP | CFLAGS_MEDIA | CFLAGS_CONTINUOUS | CFLAGS_SORT)
 
 int e_hentai_test(int argc, char **argv);
@@ -89,6 +89,7 @@ static int e_hentai_cleanup(char *fname);
 char	*help = "\
 Usage: e-hentai-dl [-d][-s][-p] [html_page|URL]\n\
   -s,--single        download one image only\n\
+  -m,--multi Num     download multiple images\n\
   -k,--keep-webpage  save the webpage for further study\n\
   -u,--unsort        do not prefix the sorting number to images\n\
   -d[a|i]            dump URL of [all|image] in the page\n\
@@ -134,6 +135,12 @@ int main(int argc, char **argv)
 				return -1;
 			}
 			sys_download_cookies_open(*++argv);
+		} else if (!strcmp(*argv, "-m") || !strcmp(*argv, "--multi")) {
+			if (--argc < 1) {
+				printf("Missing options!\n");
+				return -1;
+			}
+			uplimit_set((int)strtol(*++argv, NULL, 0));
 		} else if (!strcmp(*argv, "-c") || !strcmp(*argv, "--cleanup")) {
 			while (--argc) {
 				e_hentai_cleanup(*++argv);

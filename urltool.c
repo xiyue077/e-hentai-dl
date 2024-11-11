@@ -21,6 +21,7 @@ static	FILE	*_slog_fp = NULL;
 static	char	*_wget_proxy = NULL;
 static	char	*_wget_cookies = NULL;
 static  int	_session_flags = 0;
+static	int	_session_max = 0;	/* if >0, download upto this number */
 
 /* 
  * IE6 on Windows XP: 
@@ -968,6 +969,24 @@ int cflags_argvs(int c)
 	return _session_flags;
 }
 
+int uplimit_set(int num)
+{
+	if (num >= 0) {
+		_session_max = num;
+	}
+	return _session_max;
+}
+
+int uplimit(int n)
+{
+	if (_session_max <= 0) {
+		return 0;	/* unlimited download */
+	}
+	if (n >= _session_max) {
+		return 1;
+	}
+	return 0;
+}
 
 int slog_open(char *logname)
 {

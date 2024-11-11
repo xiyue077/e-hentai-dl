@@ -434,11 +434,11 @@ static int e_hentai_session_page(char *webpage)
 static int e_hentai_session_url(char *url)
 {
 	char	curl[1024];
-	int	skip, taken, rc, now, last;
+	int	skip, taken, rc, now, last, page;
 
 	strx_strncpy(curl, url, sizeof(curl));
 
-	skip = taken = now = last = 0;
+	skip = taken = now = last = page = 0;
 	while ((rc = e_hentai_download(curl, &now, &last)) > 0) {
 		switch (rc) {
 		case 1:		/* taken the image and continue */
@@ -449,6 +449,10 @@ static int e_hentai_session_url(char *url)
 			break;
 		case 3:		/* download image failed and continue */
 			skip++;
+			break;
+		}
+		if (uplimit(++page)) {	/* download number hits the uplimit */
+			taken--; rc = 0; /* change to received the last image and quit */
 			break;
 		}
 		printf("Waiting %d seconds.\n", sys_delay());

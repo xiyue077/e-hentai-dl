@@ -82,6 +82,9 @@ int cflags_set(int flag);
 int cflags_clear(int flag);
 int cflags_check(int flag);
 
+int uplimit_set(int num);
+int uplimit(int n);
+
 int slog_open(char *logname);
 int slog_close(void);
 int slog(char *fmt, ...);
