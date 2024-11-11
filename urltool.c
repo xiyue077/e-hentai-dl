@@ -230,21 +230,21 @@ int url_is_remote(char *s)
 
 int url_is_image(char *url)
 {
+	const	char	*imgsuffix[] = {
+		"jpg", "jpe", "gif", "png", "bmp", "webp",
+		NULL
+	};
+	int	i;
+
 	if ((url = strrchr(url, '.')) == NULL) {
 		return 0;	/* no image in the URL */
 	}
 	url++;
-	if (!strcmp(url, "jpg") || !strcmp(url, "jpe")) {
-		return 1;
-	}
-	if (!strcmp(url, "gif")) {
-		return 1;
-	}
-	if (!strcmp(url, "png")) {
-		return 1;
-	}
-	if (!strcmp(url, "bmp")) {
-		return 1;
+
+	for (i = 0; imgsuffix[i]; i++) {
+		if (!strcasecmp(url, imgsuffix[i])) {
+			return 1;
+		}
 	}
 	return 0;
 }
