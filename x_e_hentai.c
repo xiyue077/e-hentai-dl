@@ -377,6 +377,21 @@ static int e_hentai_synopsis(char *webpage, char *buf, int len)
 		n = -3;
 	}
 
+	/* collecting tags
+	 * <a id="ta_language:english" href="https://e-hentai.org/tag/language:english" 
+	 *       class="" onclick="">english</a> */
+	p = webpage;
+	fprintf(fp, "Tags: ");
+	n = 0;
+	while ((p = htm_doc_pick(p, &sp, "<a id=\"ta_", "</a>", doc, sizeof(doc))) != NULL) {
+		n += fprintf(fp, "[%s]", doc);
+		if (n > 70) {
+			fprintf(fp, "\n      ");
+			n = 0;
+		}
+	}
+	fprintf(fp, "\n");
+
 	if (fp != stdout) {
 		fclose(fp);
 	}
