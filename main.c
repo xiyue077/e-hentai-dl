@@ -22,7 +22,7 @@ done
 
 #include "urltool.h"
 
-#define VERSION		"3.7"
+#define VERSION		"3.8"
 #define DEF_FLAGS	(CFLAGS_DUMP | CFLAGS_MEDIA | CFLAGS_CONTINUOUS | CFLAGS_SORT)
 
 int e_hentai_test(int argc, char **argv);

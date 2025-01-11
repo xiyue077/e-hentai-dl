@@ -250,7 +250,7 @@ static int e_hentai_synopsis(char *webpage, char *buf, int len)
 {
 	FILE	*fp;
 	char	*p, *sp, doc[1024];
-	int	n;
+	int	n, k;
 
 	/* create the profile 
 	 * <link rel="canonical" href="https://e-hentai.org/g/2315356/41ccb04708/" />*/
@@ -382,12 +382,12 @@ static int e_hentai_synopsis(char *webpage, char *buf, int len)
 	 *       class="" onclick="">english</a> */
 	p = webpage;
 	fprintf(fp, "Tags: ");
-	n = 0;
+	k = 0;
 	while ((p = htm_doc_pick(p, &sp, "<a id=\"ta_", "</a>", doc, sizeof(doc))) != NULL) {
-		n += fprintf(fp, "[%s]", doc);
-		if (n > 70) {
+		k += fprintf(fp, "[%s]", doc);
+		if (k > 70) {
 			fprintf(fp, "\n      ");
-			n = 0;
+			k = 0;
 		}
 	}
 	fprintf(fp, "\n");
